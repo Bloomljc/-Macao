@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>澳门一日游·终极规划手册</title>
+    <style>
+        :root { 
+            --primary: #009688; 
+            --bg: #f2f2f7; 
+            --card: #ffffff; 
+            --text: #1c1c1e; 
+            --sub: #8e8e93; 
+            --accent: #ff9500; 
+            --danger: #ff3b30; 
+            --dingding: #e91e63; 
+            --hsr: #9c27b0;
+            --gold: #d4af37;
+        }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; line-height: 1.4; }
+        .card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h1 { font-size: 20px; font-weight: 800; text-align: center; margin: 5px 0; color: #1c1c1e; }
+        .subtitle { text-align: center; font-size: 11px; color: var(--sub); margin-bottom: 15px; }
+        
+        label { font-size: 11px; font-weight: 600; color: var(--sub); display: block; margin-bottom: 4px; text-transform: uppercase; }
+        select { width: 100%; padding: 10px; border: 1px solid #d1d1d6; border-radius: 10px; font-size: 13px; background: #fff; margin-bottom: 10px; -webkit-appearance: none; }
+        
+        /* Map Styles */
+        .map-box { background: #e0f2f1; border-radius: 16px; position: relative; overflow: hidden; border: 1px solid #b2dfdb; }
+        svg { width: 100%; height: auto; display: block; }
+        .node { fill: #fff; stroke: var(--primary); stroke-width: 2; }
+        .node.main { stroke: var(--danger); stroke-width: 3; }
+        .node-label { font-size: 11px; fill: #3a3a3c; font-weight: 500; }
+        .route { fill: none; stroke-width: 3; stroke-dasharray: 6; opacity: 0.15; transition: 0.4s; }
+        .route.active { opacity: 1; animation: flow 8s linear infinite; stroke-width: 4; }
+        @keyframes flow { to { stroke-dashoffset: -120; } }
+
+        .c-mtr { stroke: var(--primary); }
+        .c-bus { stroke: #34c759; }
+        .c-hsr { stroke: var(--hsr); }
+        .c-ship { stroke: #007aff; }
+        .c-ding { stroke: var(--dingding); stroke-dasharray: 2; }
+
+        /* Detail Items */
+        .detail-item { border-left: 4px solid var(--primary); padding-left: 12px; margin-bottom: 15px; }
+        .detail-item h3 { font-size: 14px; margin: 0 0 5px; color: var(--text); }
+        .detail-item p { font-size: 12.5px; margin: 0 0 4px; color: #48484a; }
+        .price-tag { color: var(--danger); font-weight: 700; font-size: 12px; margin-top: 3px; display: block; }
+        
+        /* Lists */
+        .grid-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
+        .tag { background: #f2f2f7; padding: 8px; border-radius: 10px; font-size: 11px; border-left: 3px solid var(--accent); }
+        .spot-item { margin-bottom: 10px; border-bottom: 1px solid #f2f2f7; padding-bottom: 8px; }
+        .spot-item b { color: var(--primary); font-size: 13px; }
+
+        .warning-card { border: 1px solid #ffcc00; background: #fff9e6; border-radius: 12px; padding: 12px; }
+        .warning-title { color: #856404; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+        .warning-list { font-size: 11px; margin: 0; padding-left: 15px; color: #664d03; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <h1>澳门一日游·终极手册</h1>
+    <p class="subtitle">2026 珠海过关·发财车白嫖·深度打卡</p>
+
+    <!-- 交互选择区 -->
+    <div class="card">
+        <label>1. 进澳方案 (珠海出发)</label>
+        <select id="in-sel">
+            <option value="gongbei">拱北口岸 (发财车最多-最经典)</option>
+            <option value="qingmao">青茂口岸 (24小时通关-人少快捷)</option>
+            <option value="hengqin">横琴口岸 (一地两检-直达路氹酒店)</option>
+            <option value="hzmb">港珠澳大桥珠海口岸 (穿梭巴士-海景)</option>
+        </select>
+
+        <label>2. 结束行程地点</label>
+        <select id="loc-sel">
+            <option value="loc-peninsula">在 澳门半岛 结束 (大三巴/新葡京夜景)</option>
+            <option value="loc-taipa">在 氹仔 结束 (官也街/吃喝逛街)</option>
+            <option value="loc-cotai" selected>在 路氹 结束 (永利皇宫)</option>
+        </select>
+
+        <label>3. 离澳回珠方案</label>
+        <select id="out-sel">
+            <option value="out-gongbei">经 拱北/青茂口岸 回珠海市区</option>
+            <option value="out-hengqin">经 横琴口岸 回珠海横琴/长隆</option>
+        </select>
+    </div>
+
+    <!-- 地图区 -->
+    <div class="card map-box">
+        <svg viewBox="80 0 640 550">
+            <!-- 珠海陆地 -->
+            <path d="M80,0 L250,0 L250,550 L80,550 Z" fill="#e8f5e9" /> 
+            <!-- 澳门半岛 -->
+            <path d="M420,80 Q500,50 580,80 Q620,150 500,220 Q380,150 420,80 Z" fill="#fff" /> 
+            <!-- 氹仔与路氹 -->
+            <path d="M400,280 Q500,250 600,280 Q650,380 600,480 Q500,520 400,480 Q350,380 400,280 Z" fill="#fff" /> 
+
+            <!-- 进澳路径 -->
+            <path id="path-gongbei" class="route c-mtr" d="M250,120 L500,150" />
+            <path id="path-qingmao" class="route c-bus" d="M250,120 Q350,90 500,150" />
+            <path id="path-hengqin" class="route c-hsr" d="M250,430 L500,430" />
+            <path id="path-hzmb" class="route c-ship" d="M250,50 Q400,50 500,150" />
+            
+            <!-- 跨区路径 (桥梁与主干道) -->
+            <path id="tour-bridge" class="route c-mtr" d="M500,150 L500,330" /> 
+            <path id="tour-cotai" class="route c-ding" d="M500,330 L500,430" /> 
+
+            <!-- 离澳路径 -->
+            <path id="back-gb-pen" class="route c-mtr" d="M500,150 Q350,180 250,120" /> 
+            <path id="back-gb-taipa" class="route c-mtr" d="M500,330 L250,120" /> 
+            <path id="back-gb-cotai" class="route c-mtr" d="M500,430 Q350,250 250,120" /> 
+            <path id="back-hq-pen" class="route c-hsr" d="M500,150 Q350,250 250,430" /> 
+            <path id="back-hq-taipa" class="route c-hsr" d="M500,330 L250,430" /> 
+            <path id="back-hq-cotai" class="route c-hsr" d="M500,430 Q350,450 250,430" /> 
+
+            <!-- 节点与标签 -->
+            <circle class="node" cx="250" cy="50" r="5" /><text x="175" y="55" class="node-label">大桥口岸</text>
+            <circle class="node" cx="250" cy="120" r="5" /><text x="175" y="125" class="node-label">拱北/青茂</text>
+            <circle class="node" cx="250" cy="430" r="5" /><text x="195" y="435" class="node-label">横琴口岸</text>
+            
+            <circle class="node main" cx="500" cy="150" r="7" /><text x="515" y="155" class="node-label" font-weight="bold">澳门半岛</text>
+            <circle class="node main" cx="500" cy="330" r="7" /><text x="515" y="335" class="node-label" font-weight="bold">氹仔</text>
+            <circle class="node main" cx="500" cy="430" r="7" /><text x="515" y="435" class="node-label" font-weight="bold">路氹</text>
+        </svg>
+    </div>
+
+    <!-- 罚款警示 -->
+    <div class="card warning-card">
+        <div class="warning-title">⚠️ 澳门法规罚款警示 (2026年执行)</div>
+        <ul class="warning-list">
+            <li><b>乱过马路/不走斑马线：</b>执法严格，罚 <b>MOP 300</b></li>
+            <li><b>禁烟区吸烟(含娱乐场内)：</b>严禁，罚 <b>MOP 1,500</b></li>
+            <li><b>乱丢垃圾/随地吐痰：</b>街头监控抓拍，罚 <b>MOP 600</b></li>
+            <li style="color:var(--danger)"><b>娱乐场(赌场)内拍照：</b>绝对禁止，设备可能被没收并驱逐。</li>
+        </ul>
+    </div>
+
+    <!-- 娱乐场免费吃喝 (核心模块) -->
+    <div class="card">
+        <h2 style="font-size: 15px; margin: 0 0 10px; color: var(--text); display: flex; align-items: center;">🎰 娱乐场(赌场)免费吃喝白嫖指南</h2>
+        <p style="font-size: 11px; color: var(--danger); font-weight: bold; margin-bottom: 12px; background: #ffebee; padding: 6px; border-radius: 6px;">
+            大前提：必须年满21周岁才能进入，场内绝不可拍照！
+        </p>
+
+        <div class="detail-item" style="border-left-color: var(--gold);">
+            <h3>👑 美高梅 (半岛MGM / 路氹美狮)</h3>
+            <p><b>特色：</b>公认的“内卷之王”，品质最高，提供大牌鲜奶制作的饮品。</p>
+            <div class="grid-list">
+                <div class="tag" style="border-left-color: var(--gold);"><b>黑糖珍珠奶茶</b><br>全澳最好喝，无限续</div>
+                <div class="tag" style="border-left-color: var(--gold);"><b>哈根达斯 / 甜点</b><br>可能需办卡，先到先得</div>
+            </div>
+        </div>
+
+        <div class="detail-item" style="border-left-color: #007aff;">
+            <h3>🇬🇧 金沙系 (伦敦人/巴黎人/威尼斯人)</h3>
+            <p><b>特色：</b>路氹核心群，推车随处可见，主打高品质饮品。</p>
+            <div class="grid-list">
+                <div class="tag" style="border-left-color: #007aff;"><b>港式丝袜奶茶</b><br>伦敦人特供，茶底极浓郁</div>
+                <div class="tag" style="border-left-color: #007aff;"><b>特色养生茶饮</b><br>花旗参茶、蜂蜜水等</div>
+            </div>
+        </div>
+
+        <div class="detail-item" style="border-left-color: var(--danger);">
+            <h3>💎 永利 (永利澳门 / 永利皇宫)</h3>
+            <p><b>特色：</b>极致奢华，永利皇宫的观光缆车对公众免费开放。</p>
+            <div class="grid-list">
+                <div class="tag" style="border-left-color: var(--danger);"><b>茅台拿铁/冰淇淋</b><br>超火爆款 (通常需积分)</div>
+                <div class="tag" style="border-left-color: var(--danger);"><b>鲜榨果汁</b><br>鲜椰汁、奇异果、苹果汁</div>
+            </div>
+        </div>
+
+        <div class="detail-item" style="border-left-color: #34c759;">
+            <h3>🎲 葡京系 & 新濠系</h3>
+            <div class="grid-list">
+                <div class="tag" style="border-left-color: #34c759;"><b>新葡京：芝士奶盖</b><br>二楼饮品台，还有菠萝包</div>
+                <div class="tag" style="border-left-color: #34c759;"><b>新濠：焦糖爆米花</b><br>注册会员常送蛋挞/炖汤</div>
+            </div>
+        </div>
+
+        <!-- 白嫖实操小贴士 -->
+        <div class="warning-card" style="border-color: #b8daff; background: #e2eef9; margin-top: 10px;">
+            <div class="warning-title" style="color: #004085;">💡 独家“白嫖”实操与避坑</div>
+            <ul class="warning-list" style="color: #004085;">
+                <li><b>免费开卡：</b>带通行证去服务台3分钟免费办会员卡，拿高级食物往往需要出示此卡。</li>
+                <li><b>刷积分：</b>部分爆款需“积分”，可在最低额老虎机塞10元随便按两下产生流水换取。</li>
+                <li><b>行李限制：</b>双肩包或行李箱会被要求收费寄存，建议轻装上阵进去“薅羊毛”。</li>
+                <li><b>注意体面：</b>推车饮品大方拿，切忌一人拿多杯往包里塞，保持良好素质。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 购物与打卡建议 (完整恢复版) -->
+    <div class="card">
+        <div class="detail-item" style="border-left-color: #34c759;">
+            <h3>🎁 手信与免税必买清单</h3>
+            <div class="grid-list">
+                <div class="tag"><b>钜记饼家</b><br>杏仁饼/现烤肉干</div>
+                <div class="tag"><b>安德鲁饼店</b><br>招牌葡式蛋挞</div>
+                <div class="tag"><b>咀香园</b><br>紫菜肉松凤凰卷</div>
+                <div class="tag"><b>O-Moon 文创</b><br>特色葡式蓝彩周边</div>
+                <div class="tag"><b>新八佰伴 / DFS</b><br>免税护肤彩妆包包</div>
+                <div class="tag"><b>来来超市</b><br>平价葡萄牙波特酒</div>
+            </div>
+        </div>
+
+        <div class="detail-item" style="border-left-color: var(--primary);">
+            <h3>📸 各区逛街打卡指南</h3>
+            <div class="spot-item">
+                <b>澳门半岛：</b>大三巴牌坊、恋爱巷、大炮台(俯瞰半岛)、新葡京(极致繁华)、渔人码头(古罗马建筑)。
+            </div>
+            <div class="spot-item">
+                <b>氹仔：</b>官也街(美食集中地)、龙环葡韵(薄荷绿葡式建筑)、轻轨马会站(日系小清新风景)。
+            </div>
+            <div class="spot-item">
+                <b>路氹 (金光大道)：</b>威尼斯人(室内运河)、巴黎人(铁塔打卡)、伦敦人(大本钟/夜景绝美)、永利皇宫(免费音乐喷泉缆车)。
+            </div>
+        </div>
+    </div>
+
+    <!-- 美食与交通实操区 -->
+    <div class="card">
+        <div class="detail-item" style="border-left-color: var(--accent);">
+            <h3>🍜 街头地道平价美食 (完整版)</h3>
+            <div class="grid-list">
+                <div class="tag"><b>半岛：玛嘉烈蛋挞</b><br>经典葡挞 ($11)</div>
+                <div class="tag"><b>半岛：锦华牛杂</b><br>大三巴浓郁风味 ($50)</div>
+                <div class="tag"><b>半岛：黄枝记面家</b><br>招牌虾子捞面 ($45)</div>
+                <div class="tag"><b>半岛：番茄屋</b><br>平价葡国菜 ($70)</div>
+                <div class="tag"><b>氹仔：安德鲁饼店</b><br>澳门蛋挞天花板 ($11)</div>
+                <div class="tag"><b>氹仔：旺记咖啡</b><br>厚切猪扒包 ($35)</div>
+                <div class="tag"><b>氹仔：世记咖啡</b><br>炭烧瓦煲咖啡 ($25)</div>
+                <div class="tag"><b>氹仔：莫义记</b><br>榴莲雪糕/大菜糕 ($68)</div>
+            </div>
+        </div>
+
+        <div class="detail-item" style="border-left-color: var(--dingding);">
+            <h3>🚌 跨区/交通接驳实操攻略</h3>
+            <p><b>✨ 半岛 ➔ 氹仔 (跨岛神仙路线)：</b>在澳门半岛的<b>澳门美高梅(MGM)</b>，直接坐免费发财车，一站直达路氹的<b>美狮美高梅</b>，完美省下打车/公交费！</p>
+            <p><b>✨ 官也街 ➔ 永利皇宫：</b>在官也街吃饱喝足后，步行至轻轨【排角站】，乘轻轨至【路氹东站】，出站直达<b>永利皇宫</b>看免费音乐喷泉和坐缆车。</p>
+            <p><b>注：</b>轻轨票价 <b>MOP 6起</b>。强烈建议坐在无人驾驶车厢的第一排，能像坐观光过山车一样饱览金光大道极具未来感的夜景。</p>
+        </div>
+
+        <div id="summary" class="detail-item"></div>
+    </div>
+
+<script>
+    const configs = {
+        "gongbei": { text: "<b>拱北口岸：</b>过关后直接在左侧排队坐各酒店发财车。最经典的低成本路线。", price: "免费(发财车) / 公交 6MOP", time: "约40min(含步行过关)" },
+        "qingmao": { text: "<b>青茂口岸：</b>24小时通关，人少快捷。出关后可步行至关闸坐发财车或公交。", price: "公交 6MOP", time: "约30min(含过关)" },
+        "hengqin": { text: "<b>横琴口岸：</b>一地两检极速过关。出关即是路氹区，玩豪华酒店群的首选。", price: "免费(发财车) / 轻轨 6MOP", time: "约20min(含过关)" },
+        "hzmb": { text: "<b>港珠澳大桥口岸：</b>从珠海口岸坐穿梭大巴前往澳门半岛，海景极佳。", price: "巴士 6MOP", time: "约45min" },
+        "out-gongbei": { text: "从半岛或路氹坐发财车/公交到关闸，步行经拱北或青茂回珠海市区。", price: "免费(发财车)", time: "约45min" },
+        "out-hengqin": { text: "前往横琴口岸24小时通关，非常适合在路氹看完夜景后返回长隆周边。", price: "免费/6MOP", time: "约30min" }
+    };
+
+    function update() {
+        const entry = document.getElementById('in-sel').value;
+        const loc = document.getElementById('loc-sel').value;
+        const out = document.getElementById('out-sel').value;
+        
+        // 重置所有路线状态
+        document.querySelectorAll('.route').forEach(r => r.classList.remove('active'));
+        
+        // 激活入澳路线
+        document.getElementById('path-' + entry).classList.add('active');
+        
+        // 激活跨区游玩路线
+        document.getElementById('tour-bridge').classList.add('active');
+        document.getElementById('tour-cotai').classList.add('active');
+
+        // 激活离澳路线
+        if(out === 'out-gongbei') {
+            if(loc === 'loc-peninsula') document.getElementById('back-gb-pen').classList.add('active');
+            if(loc === 'loc-taipa') document.getElementById('back-gb-taipa').classList.add('active');
+            if(loc === 'loc-cotai') document.getElementById('back-gb-cotai').classList.add('active');
+        } else if(out === 'out-hengqin') {
+            if(loc === 'loc-peninsula') document.getElementById('back-hq-pen').classList.add('active');
+            if(loc === 'loc-taipa') document.getElementById('back-hq-taipa').classList.add('active');
+            if(loc === 'loc-cotai') document.getElementById('back-hq-cotai').classList.add('active');
+        }
+
+        // 动态处理离澳文案 (特别处理路氹/永利皇宫结束的情况)
+        let outText = configs[out].text;
+        let outPrice = configs[out].price;
+        let outTime = configs[out].time;
+
+        if (loc === 'loc-cotai') {
+            if (out === 'out-gongbei') {
+                outText = "<b>经关闸回拱北/青茂：</b>在<b>永利皇宫东门</b>乘坐免费发财车，直达关闸，步行过关回珠海市区。";
+                outPrice = "免费(发财车)";
+                outTime = "约40min";
+            } else if (out === 'out-hengqin') {
+                outText = "<b>经横琴口岸回珠：</b>在<b>永利皇宫东门</b>乘坐免费发财车，直达横琴口岸，24小时通关极速返回。";
+                outPrice = "免费(发财车)";
+                outTime = "约25min";
+            }
+        }
+
+        // 更新总结面板
+        document.getElementById('summary').innerHTML = `
+            <h3>💰 交通方案与预估</h3>
+            <p><strong>进澳方案：</strong>${configs[entry].text}</p>
+            <span class="price-tag">⏱️ ${configs[entry].time} | 💵 ${configs[entry].price}</span>
+            <hr style="margin:8px 0; border:0; border-top:1px solid #eee;">
+            <p><strong>离澳方案：</strong>${outText}</p>
+            <span class="price-tag">⏱️ ${outTime} | 💵 ${outPrice}</span>
+            <p style="font-size: 11px; color: var(--sub); margin-top: 5px;">* 注: 澳门商家普遍支持微信/支付宝直接按汇率结算 (1 MOP ≈ 0.89 RMB)。</p>
+        `;
+    }
+
+    // 绑定事件与初始化
+    document.querySelectorAll('select').forEach(s => s.onchange = update);
+    update();
+</script>
+</body>
+</html>
